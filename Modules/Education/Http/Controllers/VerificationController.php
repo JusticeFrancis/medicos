@@ -48,6 +48,11 @@ class VerificationController extends Controller
       dd($verification->files);
    }
 
+   public function ty()
+   {
+       echo csrf_token();
+   }
+
   
 
 

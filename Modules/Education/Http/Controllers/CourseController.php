@@ -5,75 +5,79 @@ namespace Modules\Education\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Education\Entities\Course;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
-    public function index()
+    
+    public function index(Request $request, $id = null, $action = null)
     {
-        return view('education::index');
-    }
+                /* get all courses */
+                $courses = Course::all();
+                return response(['courses'=> $courses]);
 
-    /**
-     * Show the form for creating a new resource.
-     * @return Renderable
-     */
-    public function create()
-    {
-        return view('education::create');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     * @param Request $request
-     * @return Renderable
-     */
+    
     public function store(Request $request)
     {
-        //
+        /* store course */
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+        ]);
+        $name = $validated['name'];
+
+
+        $courses = Course::where('name',$name)->get();
+            if ($courses->count() == 0) {
+                $course = new Course();
+                $course->name = $name;
+                $course->save();
+            }
+            else {
+                return response()->json(['message' => 'Course with name already exist']);
+            }
+            return response()->json(['course'=> $course,'message'=>'course saved successfully']);
     }
 
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
+
     public function show($id)
     {
-        return view('education::show');
+        $course = Course::find($id);
+        if (!$course) {
+            return response(['message'=> 'course not found']);
+        }
+        return response(['course'=> $course]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function edit($id)
-    {
-        return view('education::edit');
-    }
+    
 
-    /**
-     * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
-     * @return Renderable
-     */
+    
     public function update(Request $request, $id)
     {
-        //
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+        ]);
+        $name = $validated['name'];
+
+        $course = Course::find($id);
+        if (!$course) {
+            return response(['message'=> 'course not found']);
+        }
+        $course->name = $name;
+        $course->save();
+        return response()->json(['course'=> $course, 'message' => 'course name updated']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     * @param int $id
-     * @return Renderable
-     */
+    
     public function destroy($id)
     {
-        //
+        $course = Course::find($id);
+        if (!$course) {
+            return response(['message'=> 'course not found']);
+        }
+        $course->delete();
+        return response()->json(['course'=> $course, 'message' => 'course deleted']);
     }
 }
